@@ -4,7 +4,7 @@ mod fps_counter;
 use fps_counter::{fps_counter_system, setup_fps_counter};
 
 mod body;
-use body::Body;
+use body::{Body, spawn_body};
 
 fn main() {
     App::new()
@@ -23,13 +23,15 @@ fn main() {
 }
 
 fn setup_simulation(mut commands: Commands) {
-    commands.spawn(Body::new(0.0, 0.0, 20.0, 1.989e30, Color::WHITE));
+    spawn_body(&mut commands, Body::new(0.0, 0.0, 50.0, 1.989e30, Color::WHITE));
 }
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn update_bodies(mut query: Query<&mut Body>) {
-    
+fn update_bodies(mut query: Query<(&mut Transform, &Body)>) {
+    for (mut transform, body) in query.iter_mut() {
+        transform.translation = body.position.extend(0.0);
+    }
 }

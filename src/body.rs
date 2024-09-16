@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Body {
     pub position: Vec2,
     pub radius: f32,
@@ -17,4 +17,19 @@ impl Body {
             color,
         }
     }
+}
+
+pub fn spawn_body(commands: &mut Commands, body: Body) {
+    commands.spawn((
+        body.clone(),
+        SpriteBundle {
+            sprite: Sprite {
+                color: body.color,
+                custom_size: Some(Vec2::new(body.radius * 2.0, body.radius * 2.0)),
+                ..default()
+            },
+            transform: Transform::from_translation(body.position.extend(0.0)),
+            ..default()
+        },
+    ));
 }
