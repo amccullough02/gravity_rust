@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy::color::palettes::basic::{YELLOW, WHITE};
+use bevy_prototype_lyon::prelude::*;
 
 use crate::constants::{AU, G, SCALE, TIMESTEP};
 
@@ -7,38 +9,41 @@ pub struct Body {
     pub position: Vec2,
     pub radius: f32,
     pub mass: f32,
-    pub color: Color,
     pub is_sun: bool,
 }
 
 impl Body {
-    pub fn new(x: f32, y: f32, radius: f32, mass: f32, color: Color, is_sun: bool) -> Self {
+    pub fn new(x: f32, y: f32, radius: f32, mass: f32, is_sun: bool) -> Self {
         Self {
             position: Vec2::new(x, y),
             radius,
             mass,
-            color,
             is_sun,
         }
     }
 }
 
 pub fn spawn_body(commands: &mut Commands, body: Body) -> Entity {
-    println!("{}", body.position);
     let scaled_position = body.position * SCALE;
-    println!("{}", scaled_position);
 
-    commands.spawn((
-        body.clone(),
-        SpriteBundle {
-            sprite: Sprite {
-                color: body.color,
-                custom_size: Some(Vec2::new(body.radius * 2.0, body.radius * 2.0)),
+    commands
+        .spawn((
+            ShapeBundle {
+                path: GeometryBuilder::build_as(
+                    &shapes::Circle {
+                        radius: body.radius,
+                        center: Vec2::ZERO,
+                    }
+                ),
+                spatial: SpatialBundle {
+                    transform: Transform::from_translation(scaled_position.extend(0.0)),
+                    ..default()
+                },
                 ..default()
             },
-            transform: Transform::from_translation(scaled_position.extend(0.0)),
-            ..default()
-        },
-    ))
-    .id()
+            Fill::color(if body.is_sun { YELLOW } else { WHITE }),
+            Stroke::new(Color::BLACK, 1.0),
+            body.clone(),
+        ))
+        .id()
 }
