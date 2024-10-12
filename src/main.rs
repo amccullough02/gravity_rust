@@ -8,7 +8,7 @@ mod body;
 use body::{Body, spawn_body};
 
 mod constants;
-use constants::{AU, G, SCALE, TIMESTEP};
+use constants::AU;
 
 fn main() {
     App::new()
@@ -27,38 +27,42 @@ fn main() {
         .run();
 }
 
-fn setup_simulation(mut commands: Commands) {
+#[derive(Resource)]
+pub struct Bodies {
+    pub bodies: Vec<Entity>
+}
 
-    let mut bodies = Vec::new();
+fn setup_simulation(mut commands: Commands) {
     
-    // Sun
+    let mut bodies = Vec::new();
+
     let sun = spawn_body(&mut commands, Body::new(0.0, 0.0, 30.0, 1.989e30, true));
     bodies.push(sun);
 
-    // Mercury
     let mercury = spawn_body(&mut commands, Body::new(0.387 * AU, 0.0, 8.0, 0.330e24, false));
     bodies.push(mercury);
 
-    // Venus
     let venus = spawn_body(&mut commands, Body::new(0.723 * AU, 0.0, 14.0, 4.86e24, false));
     bodies.push(venus);
 
-    // Earth
     let earth = spawn_body(&mut commands, Body::new(-1.0 * AU, 0.0, 16.0, 5.9742e24, false));
     bodies.push(earth);
 
-    // Mars
     let mars = spawn_body(&mut commands, Body::new(-1.524 * AU, 0.0, 12.0, 6.39e23, false));
     bodies.push(mars);
+
+    commands.insert_resource(Bodies { bodies });
 }
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn update_bodies(mut query: Query<(&mut Transform, &Body)>) {
-    for (mut transform, body) in query.iter_mut() {
-        let scaled_position = body.position * SCALE;
-        transform.translation = scaled_position.extend(0.0);
+fn update_bodies(bodies: Res<Bodies>, mut query: Query<&mut Body>) {
+    for entity in &bodies.bodies {
+        if let Ok(mut body) = query.get_mut(*entity) {
+            let mut query_ref = &mut query;
+            body.update_position(&bodies, query_ref);
+        }
     }
 }
