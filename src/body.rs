@@ -46,28 +46,28 @@ impl Body {
 
         (force_x, force_y)
     }
-    pub fn update_position(&mut self, bodies: &Res<Bodies>, query: &mut  Query<&mut Body>) {
+    pub fn update_position(&mut self, bodies: &Res<Bodies>, query: &Query<&Body>) {
         let (mut total_fx, mut total_fy) = (0.0, 0.0);
-
+    
         for &entity in &bodies.bodies {
             if let Ok(body) = query.get(entity) {
                 if self == body {
-                    continue
+                    continue;
                 }
-                
+    
                 let (fx, fy) = self.attraction(body);
                 total_fx += fx;
                 total_fy += fy;
             }
         }
-
+    
         self.x_vel += total_fx / self.mass * TIMESTEP;
         self.y_vel += total_fy / self.mass * TIMESTEP;
-
+    
         self.position.x += self.x_vel * TIMESTEP;
         self.position.y += self.y_vel * TIMESTEP;
-
     }
+    
 }
 
 pub fn spawn_body(commands: &mut Commands, body: Body) -> Entity {

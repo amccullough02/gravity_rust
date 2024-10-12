@@ -61,8 +61,8 @@ fn setup_camera(mut commands: Commands) {
 fn update_bodies(bodies: Res<Bodies>, mut query: Query<&mut Body>) {
     for entity in &bodies.bodies {
         if let Ok(mut body) = query.get_mut(*entity) {
-            let mut query_ref = &mut query;
-            body.update_position(&bodies, query_ref);
+            body.update_position(&bodies, &query); // Pass the immutable reference of query
         }
     }
 }
+
