@@ -58,11 +58,17 @@ fn setup_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn update_bodies(bodies: Res<Bodies>, mut query: Query<&mut Body>) {
+fn update_bodies(
+    bodies: Res<Bodies>,
+    mut query: Query<&mut Body>,
+    other_bodies: Query<&Body, Without<Body>>,
+) {
     for entity in &bodies.bodies {
         if let Ok(mut body) = query.get_mut(*entity) {
-            body.update_position(&bodies, &query); // Pass the immutable reference of query
+            body.update_position(&bodies, &other_bodies);
         }
     }
 }
+
+
 

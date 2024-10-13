@@ -40,34 +40,36 @@ impl Body {
         }
 
         let force = G * self.mass * other.mass / distance * distance;
-        let theta = (distance_y).atan2(distance_x);
+        let theta = distance_y.atan2(distance_x);
         let force_x = theta.cos() * force;
         let force_y = theta.sin() * force;
 
         (force_x, force_y)
     }
-    pub fn update_position(&mut self, bodies: &Res<Bodies>, query: &Query<&Body>) {
-        let (mut total_fx, mut total_fy) = (0.0, 0.0);
-    
+    pub fn update_position(&mut self, bodies: &Res<Bodies>, query: &Query<&Body, Without<Body>>) {
+        let mut total_fx = 0.0;
+        let mut total_fy = 0.0;
+
         for &entity in &bodies.bodies {
-            if let Ok(body) = query.get(entity) {
-                if self == body {
+            if let Ok(other_body) = query.get(entity) {
+                if self.position == other_body.position {
                     continue;
                 }
-    
-                let (fx, fy) = self.attraction(body);
+
+                let (fx, fy) = self.attraction(other_body);
                 total_fx += fx;
                 total_fy += fy;
             }
         }
-    
+
         self.x_vel += total_fx / self.mass * TIMESTEP;
         self.y_vel += total_fy / self.mass * TIMESTEP;
-    
+
         self.position.x += self.x_vel * TIMESTEP;
         self.position.y += self.y_vel * TIMESTEP;
     }
-    
+
+
 }
 
 pub fn spawn_body(commands: &mut Commands, body: Body) -> Entity {
